@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!-- 这是主配置文件 -->
+<configuration>
+
+	<!-- 读取[用户信息]配置文件 -->
+	<properties resource="db.properties" />
+	
+	
+	<!--	设置别名。 MyBatis 会在包名下面搜索需要的 Java Bean
+			推荐使用package的形式，它会扫描主包和子包的所有文件
+			以对象类名为别名，大小写不限，推荐使用小写	-->
+	<typeAliases>
+		<!--<typeAlias type="com.sollan.bean.User" alias="User"/> -->
+		<package name="com.sollan.bean"/>
+	</typeAliases>
+
+	<environments default="development">
+		<environment id="development">
+			<!-- 使用jdbc的事务 -->
+			<transactionManager type="JDBC" />
+
+			<!-- 使用连接池 连接数据库 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}" />
+				<property name="url" value="${jdbc.url}" />
+				<property name="username" value="${jdbc.username}" />
+				<property name="password" value="${jdbc.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+
+	<!-- 配置Mapper映射器文件的路径 -->
+	<mappers>
+		<!-- 相对路径 -->
+        <!-- <mapper resource="mapper/UserMapper.xml" /> -->
+        
+        <!-- 绝对路径 -->
+		<!-- <mapper url="file:\\\D:\JAVA\eclipse_data\ssm_Mybatis\src\mapper\UserMapper.xml"/> -->
+        
+        <!-- 使用接口名 -->
+		<!-- <mapper class="com.sollan.mapper.UserMapper"/> -->
+        
+        <!-- 使用package大范围引入,推荐使用 -->
+        <package name="com.sollan.mapper"/>
+	</mappers>
+</configuration>
+

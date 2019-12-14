@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 命名需要找【接口】的全包名 -->
+<mapper namespace="com.sollan.mapper.UserMapper">
+
+	<!-- 根据ID查询数据 -->
+	<select id="selectUserById" parameterType="Integer"	resultType="user">
+		select * from user where u_id = #{id}
+	</select>
+	
+
+	<!-- 模糊查询 -->
+	<select id="selectUserByName" parameterType="String"  resultType="com.sollan.bean.User">
+		select * from user where u_username like "%"#{name}"%"
+	</select>
+
+	<!-- 添加用户 -->
+	<insert id="inertUser" parameterType="com.sollan.bean.User">
+		INSERT INTO USER VALUES (null,#{u_username},#{u_password},#{u_sex},#{u_createTime},#{u_cid})
+	</insert>
+	
+	<!-- 修改数据 -->
+	<update id="updateUser" parameterType="com.sollan.bean.User">
+		update user set u_username=#{u_username} where u_id=#{u_id}
+	</update>
+	
+	<!-- 删除数据 -->
+	<delete id="deleteUserById" parameterType="Integer">
+		delete from user where u_id=#{id}
+	</delete>
+
+</mapper>
+
+
+<!-- #{}占位符，尽量使用#{} -->
+<!-- ${}字符串拼接 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

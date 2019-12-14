@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 命名需要找【接口】的全包名 -->
+<mapper namespace="com.sollan.mapper.UserMapper">
+	
+	<!-- SQL标签使用 使这段SQL片段能被重用-->
+	<!-- 使用<include refid="MyUserSelect"/>来进行引入 -->
+	<sql id="MyUserSelect">SELECT * FROM USER</sql>
+
+	<!-- =========================================================================================================== -->
+
+	<!-- 根据ID查询数据 -->
+	<select id="selectUserById" parameterType="Integer"
+		resultType="user">
+		select * from user where u_id = #{id}
+	</select>
+
+	<!-- 模糊查询 -->
+	<select id="selectUserByName" parameterType="String"
+		resultType="com.sollan.bean.User">
+		select * from user where u_username like "%"#{name}"%"
+	</select>
+
+	<!-- 添加用户 -->
+	<insert id="insertUser" parameterType="com.sollan.bean.User">
+		INSERT INTO USER VALUES
+		(NULL,#{u_username},#{u_password},#{u_sex},#{u_createTime},#{u_cid})
+	</insert>
+
+	<!-- 修改数据 -->
+	<update id="updateUser" parameterType="com.sollan.bean.User">
+		update user set
+		u_username=#{u_username} where u_id=#{u_id}
+	</update>
+
+	<!-- 删除数据 -->
+	<delete id="deleteUserById" parameterType="Integer">
+		delete from user where
+		u_id=#{id}
+	</delete>
+
+	<!-- 根据包装类来查询数据 -->
+	<select id="selectByUserVoId" parameterType="UserVo"
+		resultType="user">
+		select * from user where u_id = #{user.u_id}
+	</select>
+
+	<!-- 获取用户数量 -->
+	<select id="selectUserCount" resultType="Integer">
+		select count(*) from
+		user
+	</select>
+
+	<!-- =========================================================================================================== -->
+
+	<!-- 【多表查询】查询User及其所在城市的信息 -->
+
+	<!-- resultMap标签：手动映射bean属性与数据库属性。type属性-返回值类型，为[统合类]的类名,id属性-任意命名 
+		 id标签：property属性-为【bean】对象的【属性】，column属性-对应SQL语句中的【列】名，id标签一般指定主键 
+		 result标签：和id属性效果基本相同，关联bean中属性与SQL列名 
+		 association标签:指定[统合类]中的对象属性，property属性-bean中的属性值，javaType属性-指定类名 -->
+	<!-- select标签： id属性：对应接口中的方法名 
+		 resultMap属性：返回值类型，也是前面的resultMap的id -->
+	<resultMap type="UserVo" id="uservolist">
+		<id property="u_id" column="u_id" />
+		<result property="u_username" column="u_username" />
+		<result property="u_sex" column="u_sex" />
+		<association property="country" javaType="Country">
+			<id property="id" column="c_id" />
+			<result property="c_countryname" column="c_countryname" />
+		</association>
+	</resultMap>
+
+	<select id="selectAllUserVo" resultMap="uservolist">
+		SELECT
+		u_id,u_username,u_sex,c_id,c_countryname FROM USER u LEFT JOIN country
+		c ON u.u_cid = c.c_id
+	</select>
+
+	<!-- =========================================================================================================== -->
+
+	<!-- Where标签：能去掉<if>[句首]多余的AND符号 -->
+	<select id="selectUsrListByUser" parameterType="User"
+		resultType="User">
+		SELECT * FROM USER
+		<where>
+			<if test="u_sex!=null and u_sex!='' ">
+				u_sex=#{u_sex}
+			</if>
+			<if test="u_username!=null and u_username!=''">
+				AND u_username LIKE "%"#{u_username}"%"
+			</if>
+			<if test="u_cid and u_cid!=''">
+				AND u_cid=#{u_cid}
+			</if>
+		</where>
+	</select>
+
+	
+	<!-- trim标签：可以定制where标签的规则
+		 prefix属性：前缀，在trim标签开始处添加where标签
+		 suffix属性：后缀，在trim标签结束处添加where标签
+		 prefixOverrides属性：去掉<if> [句首]的AND和OR标签，这与where的基础属性类似
+		 suffixOverrides属性：去掉<if> [句尾]的AND和OR-->
+	<select id="selectUsrListByUserTrim" parameterType="User" resultType="User">
+		SELECT * FROM USER
+		<trim prefix="where" suffixOverrides="AND/OR">
+			<if test="u_sex!=null and u_sex!='' ">
+				u_sex=#{u_sex}	AND
+			</if>
+			<if test="u_username!=null and u_username!=''">
+				 u_username LIKE "%"#{u_username}"%" AND
+			</if>
+			<if test="u_cid and u_cid!=''">
+				 u_cid=#{u_cid}
+			</if>
+		</trim>
+	</select>
+
+
+	<!-- Set标签：可以去掉<if>[句尾]多出的逗号 -->
+	<update id="updateSetUser" parameterType="User">
+		update user
+		<set>
+			<if test="u_username!=null and u_username!='' ">
+				u_username=#{u_username},
+			</if>
+			<if test="u_password and u_password!='' ">
+				u_password=#{u_password},
+			</if>
+			<if test="u_sex!=null and u_sex!='' ">
+				u_sex=#{u_sex}
+			</if>
+		</set>
+		where u_id=#{u_id}
+	</update>
+
+	<!-- Foreach遍历 collection：参数为数组时，使用array接收。参数为集合时，使用list接收 
+		 item：用于存储数组中的值 
+		 open：循环开始时在句首添加 
+		 close：循环结束时在末尾添加 
+		 separator：每次循环结束时在末尾添加 完全执行结果：(1,3,5) -->
+	<select id="selectUserListByIds" resultType="User">
+		SELECT * FROM USER WHERE u_id IN
+		<foreach collection="array" item="id" open="(" close=")"
+			separator=",">
+			#{id}
+		</foreach>
+	</select>
+
+	<!-- 当参数为包装类时，参数应为包装类中声明的变量名 -->
+	<select id="selectUserListByUserVo" parameterType="UserVo"	resultType="User">
+		SELECT * FROM USER WHERE u_id IN
+		<foreach collection="idList" item="id" open="(" close=")"
+			separator=",">
+			#{id}
+		</foreach>
+	</select>
+	
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- #{}占位符，尽量使用#{} -->
+<!-- ${}字符串拼接 -->
