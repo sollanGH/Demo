@@ -1,2 +1,2 @@
-# Demo
-测试案例
+# MyBatis
+学习MyBatis的代码笔记
